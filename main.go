@@ -7,6 +7,8 @@ import (
 	"syscall"
 
 	"github.com/lampctl/lampctl/db"
+	"github.com/lampctl/lampctl/gpio"
+	"github.com/lampctl/lampctl/registry"
 	"github.com/urfave/cli/v2"
 )
 
@@ -35,13 +37,21 @@ func main() {
 		Action: func(c *cli.Context) error {
 
 			// Create the database
-			d, err := db.New(&db.Config{
+			db, err := db.New(&db.Config{
 				Path: c.String("db-path"),
 			})
 			if err != nil {
 				return err
 			}
-			defer d.Close()
+			defer db.Close()
+
+			// Create the registry
+			r := registry.New()
+			defer r.Close()
+
+			// Add the currently-supported providers
+			g, err := gpio.New(db)
+			r.Register(g)
 
 			// Wait for SIGINT or SIGTERM
 			sigChan := make(chan os.Signal, 1)
