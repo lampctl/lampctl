@@ -9,6 +9,7 @@ import (
 	"github.com/lampctl/lampctl/db"
 	"github.com/lampctl/lampctl/gpio"
 	"github.com/lampctl/lampctl/registry"
+	"github.com/lampctl/lampctl/server"
 	"github.com/urfave/cli/v2"
 )
 
@@ -52,6 +53,17 @@ func main() {
 			// Add the currently-supported providers
 			g, err := gpio.New(db)
 			r.Register(g)
+
+			// Start up the server
+			s, err := server.New(&server.Config{
+				Addr:     c.String("server-addr"),
+				Debug:    c.Bool("debug"),
+				Registry: r,
+			})
+			if err != nil {
+				return err
+			}
+			defer s.Close()
 
 			// Wait for SIGINT or SIGTERM
 			sigChan := make(chan os.Signal, 1)

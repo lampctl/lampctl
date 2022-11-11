@@ -21,6 +21,15 @@ func (r *Registry) Register(provider Provider) {
 	r.providers[provider.ID()] = provider
 }
 
+// Providers returns a slice of all registered providers.
+func (r *Registry) Providers() []Provider {
+	providers := []Provider{}
+	for _, p := range r.providers {
+		providers = append(providers, p)
+	}
+	return providers
+}
+
 // GetProvider retrieves the specified provider by its ID.
 func (r *Registry) GetProvider(id string) (Provider, error) {
 	p, ok := r.providers[id]
