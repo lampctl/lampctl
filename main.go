@@ -1,0 +1,57 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/lampctl/lampctl/db"
+	"github.com/urfave/cli/v2"
+)
+
+func main() {
+	app := &cli.App{
+		Name:  "xmascontrol",
+		Usage: "HTTP interface for controlling lights",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "debug",
+				EnvVars: []string{"DEBUG"},
+				Usage:   "enable debug mode",
+			},
+			&cli.StringFlag{
+				Name:    "db-path",
+				EnvVars: []string{"DB_PATH"},
+				Usage:   "path to SQLite database",
+			},
+			&cli.StringFlag{
+				Name:    "server-addr",
+				Value:   ":http",
+				EnvVars: []string{"SERVER_ADDR"},
+				Usage:   "HTTP address to listen on",
+			},
+		},
+		Action: func(c *cli.Context) error {
+
+			// Create the database
+			d, err := db.New(&db.Config{
+				Path: c.String("db-path"),
+			})
+			if err != nil {
+				return err
+			}
+			defer d.Close()
+
+			// Wait for SIGINT or SIGTERM
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+			<-sigChan
+
+			return nil
+		},
+	}
+	if err := app.Run(os.Args); err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: %s\n", err.Error())
+	}
+}
