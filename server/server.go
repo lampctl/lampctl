@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/lampctl/lampctl/registry"
+	"github.com/lampctl/lampctl/ui"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -37,6 +39,10 @@ func New(cfg *Config) (*Server, error) {
 		}
 	)
 
+	// Serve the static files
+	r.Use(static.Serve("/", ui.EmbedFileSystem{FileSystem: http.FS(ui.Content)}))
+
+	// Define the API
 	api := r.Group("/api")
 
 	// Attempt to handle panic() calls within API routes by converting them
@@ -56,9 +62,17 @@ func New(cfg *Config) (*Server, error) {
 		})
 	}))
 
+	// Add the API routes
 	api.GET("/providers", s.api_providers_GET)
 	api.GET("/providers/:id", s.api_providers_id_GET)
 	api.GET("/providers/:id/apply", s.api_providers_id_apply_POST)
+
+	// Serve the static files on all other paths
+	r.NoRoute(func(c *gin.Context) {
+		c.Request.URL.Path = "/"
+		r.HandleContext(c)
+		c.Abort()
+	})
 
 	// Start the goroutine that listens for incoming connections
 	go func() {
