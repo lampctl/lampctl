@@ -38,3 +38,17 @@ func (s *Server) api_providers_id_GET(c *gin.Context) {
 		Lamps:  p.Lamps(),
 	})
 }
+
+func (s *Server) api_providers_id_apply_POST(c *gin.Context) {
+	p, err := s.registry.GetProvider(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	v := []*registry.Change{}
+	if err := c.ShouldBindJSON(&v); err != nil {
+		panic(err)
+	}
+	if err := p.Apply(v); err != nil {
+		panic(err)
+	}
+}

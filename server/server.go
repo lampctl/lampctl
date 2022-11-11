@@ -58,6 +58,7 @@ func New(cfg *Config) (*Server, error) {
 
 	api.GET("/providers", s.api_providers_GET)
 	api.GET("/providers/:id", s.api_providers_id_GET)
+	api.GET("/providers/:id/apply", s.api_providers_id_apply_POST)
 
 	// Start the goroutine that listens for incoming connections
 	go func() {
