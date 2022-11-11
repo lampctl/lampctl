@@ -15,7 +15,7 @@ type Provider interface {
 	Name() string
 
 	// Init initializes the provider, including database models.
-	Init(*db.Conn) error
+	Init(db *db.Conn) error
 
 	// Free closes all resources associated with the provider.
 	Free()
