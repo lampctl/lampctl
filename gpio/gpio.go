@@ -121,7 +121,7 @@ func (g *GPIO) Apply(changes []*registry.Change) error {
 		r.channels[v] = c.State
 		dirtyRegisters[r] = nil
 	}
-	for r, _ := range dirtyRegisters {
+	for r := range dirtyRegisters {
 		r.Cycle()
 	}
 	return nil
