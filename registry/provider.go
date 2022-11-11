@@ -1,8 +1,25 @@
 package registry
 
-import (
-	"github.com/lampctl/lampctl/db"
-)
+// Group provides a logical grouping for lamps in a provider.
+type Group struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Lamp provides information about a specific lamp that can be controlled.
+type Lamp struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	GroupID string `json:"group_id"`
+	State   bool   `json:"state"`
+}
+
+// Change represents a request to change the state of a lamp.
+type Change struct {
+	GroupID string `json:"group_id"`
+	LampID  string `json:"lamp_id"`
+	State   bool   `json:"state"`
+}
 
 // Provider represents a group of lamps. The interface provides methods for
 // initializing, enumerating, and controlling them.
@@ -14,15 +31,15 @@ type Provider interface {
 	// Name returns a human-friendly name for the provider.
 	Name() string
 
-	// Init initializes the provider, including database models.
-	Init(db *db.Conn) error
+	// Close frees all resources associated with the provider.
+	Close()
 
-	// Free closes all resources associated with the provider.
-	Free()
+	// Groups returns a list of groups in the provider.
+	Groups() []*Group
 
-	// GetLamps returns a list of all lamps managed by the provider.
-	GetLamps() []Lamp
+	// Lamps returns a list of all lamps managed by the provider.
+	Lamps() []*Lamp
 
-	// Apply causes any state changes to immediately take effect.
-	Apply() error
+	// Apply applies a list of state changes to the lamps in the provider.
+	Apply(changes []*Change) error
 }
