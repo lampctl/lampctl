@@ -1,4 +1,4 @@
-package manager
+package registry
 
 // Lamp provides information about a specific lamp that can be controlled.
 type Lamp interface {
