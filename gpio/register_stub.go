@@ -18,7 +18,10 @@ type Register struct {
 }
 
 func NewRegister(register *register_db.Register) *Register {
-	return &Register{channels: make([]bool, register.Width)}
+	return &Register{
+		Register: register,
+		channels: make([]bool, register.Width),
+	}
 }
 
 func (r *Register) Cycle() {}
