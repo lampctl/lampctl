@@ -13,7 +13,9 @@ type Registry struct {
 
 // New creates and initializes a new Registry instance.
 func New() *Registry {
-	return &Registry{}
+	return &Registry{
+		providers: make(map[string]Provider),
+	}
 }
 
 // Register adds a provider to the registry.
