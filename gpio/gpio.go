@@ -9,7 +9,6 @@ import (
 	"github.com/lampctl/lampctl/db"
 	register_db "github.com/lampctl/lampctl/gpio/db"
 	"github.com/lampctl/lampctl/registry"
-	"github.com/stianeikeland/go-rpio/v4"
 )
 
 const ProviderID = "gpio"
@@ -40,7 +39,7 @@ func (g *GPIO) findRegister(id string) (*Register, error) {
 
 // New creates a new GPIO instance.
 func New(db *db.Conn) (*GPIO, error) {
-	if err := rpio.Open(); err != nil {
+	if err := initRPIO(); err != nil {
 		return nil, err
 	}
 	if err := db.AutoMigrate(&register_db.Register{}); err != nil {
@@ -55,7 +54,6 @@ func New(db *db.Conn) (*GPIO, error) {
 	}
 	for _, r := range registers {
 		g.registers[r.ID] = NewRegister(r)
-		g.registers[r.ID].Cycle()
 	}
 	return g, nil
 }
@@ -69,7 +67,7 @@ func (g *GPIO) Name() string {
 }
 
 func (g *GPIO) Close() {
-	rpio.Close()
+	closeRPIO()
 }
 
 func (g *GPIO) Groups() []*registry.Group {

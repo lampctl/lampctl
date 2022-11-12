@@ -1,9 +1,19 @@
+//go:build unix
+
 package gpio
 
 import (
 	register_db "github.com/lampctl/lampctl/gpio/db"
 	"github.com/stianeikeland/go-rpio/v4"
 )
+
+func initRPIO() error {
+	return rpio.Open()
+}
+
+func closeRPIO() {
+	rpio.Close()
+}
 
 // Register represents an individual shift register chain.
 type Register struct {
@@ -20,6 +30,7 @@ func NewRegister(register *register_db.Register) *Register {
 	rpio.Pin(r.DataPin).Output()
 	rpio.Pin(r.LatchPin).Output()
 	rpio.Pin(r.ClockPin).Output()
+	r.Cycle()
 	return r
 }
 
