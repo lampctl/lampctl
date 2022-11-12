@@ -51,7 +51,12 @@ func main() {
 			defer r.Close()
 
 			// Add the currently-supported providers
-			g, err := gpio.New(db)
+			g, err := gpio.New(&gpio.Config{
+				DB: db,
+			})
+			if err != nil {
+				return err
+			}
 			r.Register(g)
 
 			// Start up the server

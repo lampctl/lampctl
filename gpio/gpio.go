@@ -22,6 +22,7 @@ var (
 // GPIO pins on a Raspberry Pi.
 type GPIO struct {
 	mutex     sync.RWMutex
+	db        *db.Conn
 	registers map[int64]*Register
 }
 
@@ -38,19 +39,20 @@ func (g *GPIO) findRegister(id string) (*Register, error) {
 }
 
 // New creates a new GPIO instance.
-func New(db *db.Conn) (*GPIO, error) {
+func New(cfg *Config) (*GPIO, error) {
+	g := &GPIO{
+		db:        cfg.DB,
+		registers: make(map[int64]*Register),
+	}
 	if err := initRPIO(); err != nil {
 		return nil, err
 	}
-	if err := db.AutoMigrate(&register_db.Register{}); err != nil {
+	if err := g.db.AutoMigrate(&register_db.Register{}); err != nil {
 		return nil, err
 	}
 	registers := []*register_db.Register{}
-	if err := db.Find(&registers).Error; err != nil {
+	if err := g.db.Find(&registers).Error; err != nil {
 		return nil, err
-	}
-	g := &GPIO{
-		registers: make(map[int64]*Register),
 	}
 	for _, r := range registers {
 		g.registers[r.ID] = NewRegister(r)
