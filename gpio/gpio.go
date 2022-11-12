@@ -70,6 +70,10 @@ func (g *GPIO) Name() string {
 }
 
 func (g *GPIO) Init(api *gin.RouterGroup) error {
+	api.POST("/registers", g.api_registers_POST)
+	api.GET("/registers/:id", g.api_registers_id_GET)
+	api.POST("/registers/:id", g.api_registers_id_POST)
+	api.DELETE("/registers/:id", g.api_registers_id_DELETE)
 	return nil
 }
 
