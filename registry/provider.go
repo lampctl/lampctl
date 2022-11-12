@@ -1,5 +1,7 @@
 package registry
 
+import "github.com/gin-gonic/gin"
+
 // Group provides a logical grouping for lamps in a provider.
 type Group struct {
 	ID   string `json:"id"`
@@ -30,6 +32,9 @@ type Provider interface {
 
 	// Name returns a human-friendly name for the provider.
 	Name() string
+
+	// Init initializes the provider, allowing it to register any API routes.
+	Init(api *gin.RouterGroup) error
 
 	// Close frees all resources associated with the provider.
 	Close()

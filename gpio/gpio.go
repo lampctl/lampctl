@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/lampctl/lampctl/db"
 	register_db "github.com/lampctl/lampctl/gpio/db"
 	"github.com/lampctl/lampctl/registry"
@@ -66,6 +67,10 @@ func (g *GPIO) ID() string {
 
 func (g *GPIO) Name() string {
 	return "GPIO Shift Register"
+}
+
+func (g *GPIO) Init(api *gin.RouterGroup) error {
+	return nil
 }
 
 func (g *GPIO) Close() {
