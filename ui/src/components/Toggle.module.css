@@ -1,0 +1,26 @@
+.toggle {
+  background-color: #e0e0e0;
+  border: 2px solid #c0c0c0;
+  border-radius: 6px;
+  padding: 2px;
+  user-select: none;
+  width: 80px;
+}
+
+.slider {
+  background-color: #a0a0a0;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 20px;
+  padding: 4px 8px;
+  text-align: center;
+  transition: all 200ms;
+}
+
+.slider.on {
+  background-color: #0f52ba;
+  color: white;
+  margin-right: 0;
+  margin-left: 20px;
+  transition: all 200ms;
+}
