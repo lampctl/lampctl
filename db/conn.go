@@ -26,6 +26,13 @@ func New(cfg *Config) (*Conn, error) {
 	}, nil
 }
 
+// Transaction runs the provided function in a transaction.
+func (c *Conn) Transaction(fn func(*Conn) error) error {
+	return c.DB.Transaction(func(tx *gorm.DB) error {
+		return fn(&Conn{DB: tx})
+	})
+}
+
 // Close closes the database connection.
 func (c *Conn) Close() {
 	db, _ := c.DB.DB()
