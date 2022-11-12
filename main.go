@@ -35,6 +35,9 @@ func main() {
 				Usage:   "HTTP address to listen on",
 			},
 		},
+		Commands: []*cli.Command{
+			installCommand,
+		},
 		Action: func(c *cli.Context) error {
 
 			// Create the database
