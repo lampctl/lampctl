@@ -14,7 +14,9 @@ export default function ProviderList() {
     <>
       {providers === null ?
         <p>Loading...</p> :
-        providers.map(p => <div key={p.id}>{p.name}</div>)}
+        providers.map(p => (
+          <div key={p.id}>{p.name}</div>
+        ))}
     </>
   )
 }
