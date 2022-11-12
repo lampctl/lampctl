@@ -15,7 +15,7 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "xmascontrol",
+		Name:  "lampctl",
 		Usage: "HTTP interface for controlling lights",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
