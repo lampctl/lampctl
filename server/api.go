@@ -51,4 +51,5 @@ func (s *Server) api_providers_id_apply_POST(c *gin.Context) {
 	if err := p.Apply(v); err != nil {
 		panic(err)
 	}
+	c.JSON(http.StatusOK, gin.H{})
 }
