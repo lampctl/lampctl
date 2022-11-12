@@ -1,4 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: sans-serif;
   margin: 0;
+}
+
+.container {
+  margin: auto;
+  padding: 0 12px;
+}
+
+@media (min-width: 940px) {
+  .container {
+    width: 900px;
+  }
 }
