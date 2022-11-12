@@ -53,7 +53,7 @@ func install(c *cli.Context) error {
 	}
 
 	// Attempt to open the file
-	f, err := os.Create("/etc/systemd/system/lampctl.service")
+	f, err := os.Create("/lib/systemd/system/lampctl.service")
 	if err != nil {
 		return err
 	}
