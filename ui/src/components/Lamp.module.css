@@ -1,0 +1,14 @@
+.container {
+  padding: 4px;
+}
+
+.container:nth-child(odd) {
+  background-color: #e0e0e0;
+}
+
+.lamp {
+  align-items: center;
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: space-between;
+}

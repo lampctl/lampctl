@@ -1,0 +1,12 @@
+.group {
+  margin: 8px 0;
+}
+
+.title {
+  border-bottom: 2px solid black;
+  font-weight: bold;
+}
+
+.lamps {
+  margin-left: 16px;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Provider from './Provider'
 
 export default function ProviderList() {
 
@@ -15,7 +16,7 @@ export default function ProviderList() {
       {providers === null ?
         <p>Loading...</p> :
         providers.map(p => (
-          <div key={p.id}>{p.name}</div>
+          <Provider key={p.id} provider={p} />
         ))}
     </>
   )
