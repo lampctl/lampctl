@@ -65,7 +65,7 @@ func New(cfg *Config) (*Server, error) {
 	// Add the provider API routes
 	api.GET("/providers", s.api_providers_GET)
 	api.GET("/providers/:id", s.api_providers_id_GET)
-	api.GET("/providers/:id/apply", s.api_providers_id_apply_POST)
+	api.POST("/providers/:id/apply", s.api_providers_id_apply_POST)
 
 	// Add the API routes from each individual provider
 	for _, p := range s.registry.Providers() {
