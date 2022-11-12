@@ -24,8 +24,8 @@ func (s *Server) api_providers_GET(c *gin.Context) {
 }
 
 type providerMetaJSON struct {
-	Groups []*registry.Group
-	Lamps  []*registry.Lamp
+	Groups []*registry.Group `json:"groups"`
+	Lamps  []*registry.Lamp  `json:"lamps"`
 }
 
 func (s *Server) api_providers_id_GET(c *gin.Context) {
