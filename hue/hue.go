@@ -3,6 +3,7 @@ package hue
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,18 @@ type Hue struct {
 	mutex   sync.RWMutex
 	db      *db.Conn
 	bridges map[int64]*Bridge
+}
+
+func (h *Hue) findBridge(id string) (*Bridge, error) {
+	v, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	r, ok := h.bridges[v]
+	if !ok {
+		return nil, registry.ErrInvalidRegister
+	}
+	return r, nil
 }
 
 // New creates a new Hue instance.
@@ -51,6 +64,8 @@ func (h *Hue) ID() string {
 func (h *Hue) Name() string {
 	return "Philips Hue"
 }
+
+// TODO: add API routes
 
 func (h *Hue) Init(api *gin.RouterGroup) error {
 	return nil
@@ -96,5 +111,16 @@ func (h *Hue) Lamps() []*registry.Lamp {
 }
 
 func (h *Hue) Apply(changes []*registry.Change) error {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+	for _, c := range changes {
+		b, err := h.findBridge(c.GroupID)
+		if err != nil {
+			return err
+		}
+		if err := b.setState(c.LampID, c.State); err != nil {
+			return err
+		}
+	}
 	return nil
 }

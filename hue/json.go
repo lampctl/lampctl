@@ -26,9 +26,9 @@ type hueDynamics struct {
 }
 
 type hueLight struct {
-	ID       string       `json:"id"`
-	Metadata *hueMetadata `json:"metadata"`
-	On       *hueOn       `json:"on"`
-	Dimming  *hueDimming  `json:"dimming"`
-	Dynamics *hueDynamics `json:"dynamics"`
+	ID       string       `json:"id,omitempty"`
+	Metadata *hueMetadata `json:"metadata,omitempty"`
+	On       *hueOn       `json:"on,omitempty"`
+	Dimming  *hueDimming  `json:"dimming,omitempty"`
+	Dynamics *hueDynamics `json:"dynamics,omitempty"`
 }

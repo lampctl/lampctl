@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -51,6 +52,33 @@ func (b *Bridge) doRequest(method, path string, body interface{}) (*hueResponse,
 
 func (b *Bridge) doGet(method string) (*hueResponse, error) {
 	return b.doRequest(http.MethodGet, method, nil)
+}
+
+func (b *Bridge) doPut(method string, body interface{}) (*hueResponse, error) {
+	return b.doRequest(http.MethodPut, method, body)
+}
+
+func (b *Bridge) setState(light_id string, on bool) error {
+	l := &hueLight{
+		On: &hueOn{
+			On: on,
+		},
+		Dynamics: &hueDynamics{},
+	}
+	if on {
+		l.Dimming = &hueDimming{
+			Brightness: 100,
+		}
+	}
+	_, err := b.doPut(
+		fmt.Sprintf("/clip/v2/resource/light/%s", light_id),
+		l,
+	)
+	if err != nil {
+		return err
+	}
+	l.On.On = on
+	return nil
 }
 
 // NewBridge creates and initializes a new Bridge instance.
