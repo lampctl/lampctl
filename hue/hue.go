@@ -51,9 +51,9 @@ func (h *Hue) Name() string {
 	return "Philips Hue"
 }
 
-// TODO: add API routes
-
 func (h *Hue) Init(api *gin.RouterGroup) error {
+	api.POST("/bridges", h.api_hue_bridges_POST)
+	api.DELETE("/bridges/:id", h.api_hue_bridges_id_DELETE)
 	return nil
 }
 

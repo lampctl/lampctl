@@ -4,6 +4,20 @@ import (
 	"encoding/json"
 )
 
+type hueRegisterRequest struct {
+	DeviceType        string `json:"devicetype"`
+	GenerateClientKey bool   `json:"generateclientkey"`
+}
+
+type hueRegisterResponse []*struct {
+	Error *struct {
+		Description string `json:"description"`
+	} `json:"error"`
+	Success *struct {
+		Username string `json:"username"`
+	} `json:"success"`
+}
+
 type hueResponse struct {
 	Errors []interface{}   `json:"errors"`
 	Data   json.RawMessage `json:"data"`
@@ -31,4 +45,8 @@ type hueLight struct {
 	On       *hueOn       `json:"on,omitempty"`
 	Dimming  *hueDimming  `json:"dimming,omitempty"`
 	Dynamics *hueDynamics `json:"dynamics,omitempty"`
+}
+
+type hueBridge struct {
+	BridgeID string `json:"bridge_id"`
 }

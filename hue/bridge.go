@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,10 @@ import (
 	hue_db "github.com/lampctl/lampctl/hue/db"
 )
 
+const appName = "lampctl"
+
+var errInvalidResponse = errors.New("invalid response received")
+
 // Bridge represents a connection to a Hue bridge.
 type Bridge struct {
 	*hue_db.Bridge
@@ -19,7 +24,7 @@ type Bridge struct {
 	lights map[string]*hueLight
 }
 
-func (b *Bridge) doRequest(method, path string, body interface{}) (*hueResponse, error) {
+func (b *Bridge) doRequest(method, path string, body interface{}) (*http.Response, error) {
 	var reader io.Reader
 	if body != nil {
 		v, err := json.Marshal(body)
@@ -38,24 +43,74 @@ func (b *Bridge) doRequest(method, path string, body interface{}) (*hueResponse,
 		return nil, err
 	}
 	r.Header.Add("hue-application-key", b.Username)
-	resp, err := b.client.Do(r)
+	return b.client.Do(r)
+}
+
+func (b *Bridge) doRequestAndResponse(method, path string, body interface{}) (*hueResponse, error) {
+	r, err := b.doRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	hResp := &hueResponse{}
-	if err := json.NewDecoder(resp.Body).Decode(hResp); err != nil {
+	defer r.Body.Close()
+	response := &hueResponse{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		return nil, err
 	}
-	return hResp, nil
+	return response, nil
 }
 
 func (b *Bridge) doGet(method string) (*hueResponse, error) {
-	return b.doRequest(http.MethodGet, method, nil)
+	return b.doRequestAndResponse(http.MethodGet, method, nil)
 }
 
 func (b *Bridge) doPut(method string, body interface{}) (*hueResponse, error) {
-	return b.doRequest(http.MethodPut, method, body)
+	return b.doRequestAndResponse(http.MethodPut, method, body)
+}
+
+func (b *Bridge) register() error {
+	r, err := b.doRequest(
+		http.MethodPost,
+		"/api",
+		&hueRegisterRequest{
+			DeviceType:        appName,
+			GenerateClientKey: true,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	response := hueRegisterResponse{}
+	if err := json.NewDecoder(r.Body).Decode(&response); err != nil {
+		return err
+	}
+	if len(response) < 1 {
+		return errInvalidResponse
+	}
+	if response[0].Error != nil {
+		return errors.New(response[0].Error.Description)
+	}
+	if response[0].Success == nil {
+		return errInvalidResponse
+	}
+	b.Username = response[0].Success.Username
+	return nil
+}
+
+func (b *Bridge) getID() error {
+	r, err := b.doGet("/clip/v2/resource/bridge")
+	if err != nil {
+		return err
+	}
+	bridges := []*hueBridge{}
+	if err := json.Unmarshal(r.Data, &bridges); err != nil {
+		return err
+	}
+	if len(bridges) < 1 {
+		return errInvalidResponse
+	}
+	b.ID = bridges[0].BridgeID
+	return nil
 }
 
 func (b *Bridge) setState(light_id string, on bool) error {
