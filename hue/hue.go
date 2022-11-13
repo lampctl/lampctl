@@ -34,8 +34,8 @@ func New(cfg *Config) (*Hue, error) {
 		return nil, err
 	}
 	for _, b := range bridges {
-		v, err := NewBridge(b)
-		if err != nil {
+		v := NewBridge(b)
+		if err := v.Init(); err != nil {
 			return nil, err
 		}
 		h.bridges[b.ID] = v

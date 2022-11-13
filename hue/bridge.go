@@ -136,9 +136,9 @@ func (b *Bridge) setState(light_id string, on bool) error {
 	return nil
 }
 
-// NewBridge creates and initializes a new Bridge instance.
-func NewBridge(bridge *hue_db.Bridge) (*Bridge, error) {
-	b := &Bridge{
+// NewBridge creates a new Bridge instance.
+func NewBridge(bridge *hue_db.Bridge) *Bridge {
+	return &Bridge{
 		Bridge: bridge,
 		client: &http.Client{
 			Transport: &http.Transport{
@@ -153,16 +153,20 @@ func NewBridge(bridge *hue_db.Bridge) (*Bridge, error) {
 		},
 		lights: make(map[string]*hueLight),
 	}
+}
+
+// Initialize loads the list of lights in a bridge.
+func (b *Bridge) Init() error {
 	r, err := b.doGet("/clip/v2/resource/light")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	lights := []*hueLight{}
 	if err := json.Unmarshal(r.Data, &lights); err != nil {
-		return nil, err
+		return err
 	}
 	for _, l := range lights {
 		b.lights[l.ID] = l
 	}
-	return b, nil
+	return nil
 }

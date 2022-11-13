@@ -12,10 +12,7 @@ func (h *Hue) api_hue_bridges_POST(c *gin.Context) {
 	if err := c.ShouldBindJSON(v); err != nil {
 		panic(err)
 	}
-	b, err := NewBridge(v)
-	if err != nil {
-		panic(err)
-	}
+	b := NewBridge(v)
 	if b.Username == "" {
 		if err := b.register(); err != nil {
 			panic(err)
@@ -25,6 +22,9 @@ func (h *Hue) api_hue_bridges_POST(c *gin.Context) {
 		if err := b.getID(); err != nil {
 			panic(err)
 		}
+	}
+	if err := b.Init(); err != nil {
+		panic(err)
 	}
 	if err := h.db.Save(b).Error; err != nil {
 		panic(err)
