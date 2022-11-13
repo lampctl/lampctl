@@ -96,7 +96,7 @@ func (g *GPIO) Lamps() []*registry.Lamp {
 		for i, s := range r.channels {
 			lamps = append(lamps, &registry.Lamp{
 				ID:      fmt.Sprint(i),
-				Name:    fmt.Sprintf("Channel %d", i+1),
+				Name:    fmt.Sprintf("Channel %02d", i+1),
 				GroupID: fmt.Sprint(r.Register.ID),
 				State:   s,
 			})
