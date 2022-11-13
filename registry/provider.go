@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrInvalidRegister = errors.New("invalid register specified")
-	ErrInvalidChannel  = errors.New("invalid channel specified")
+	ErrInvalidGroup = errors.New("invalid group specified")
+	ErrInvalidLamp  = errors.New("invalid lamp specified")
 )
 
 // Group provides a logical grouping for lamps in a provider.

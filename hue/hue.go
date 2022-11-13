@@ -2,7 +2,6 @@ package hue
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -18,26 +17,14 @@ const ProviderID = "hue"
 type Hue struct {
 	mutex   sync.RWMutex
 	db      *db.Conn
-	bridges map[int64]*Bridge
-}
-
-func (h *Hue) findBridge(id string) (*Bridge, error) {
-	v, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	r, ok := h.bridges[v]
-	if !ok {
-		return nil, registry.ErrInvalidRegister
-	}
-	return r, nil
+	bridges map[string]*Bridge
 }
 
 // New creates a new Hue instance.
 func New(cfg *Config) (*Hue, error) {
 	h := &Hue{
 		db:      cfg.DB,
-		bridges: make(map[int64]*Bridge),
+		bridges: make(map[string]*Bridge),
 	}
 	if err := h.db.AutoMigrate(&hue_db.Bridge{}); err != nil {
 		return nil, err
@@ -106,9 +93,9 @@ func (h *Hue) Apply(changes []*registry.Change) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 	for _, c := range changes {
-		b, err := h.findBridge(c.GroupID)
-		if err != nil {
-			return err
+		b, ok := h.bridges[c.GroupID]
+		if !ok {
+			return registry.ErrInvalidGroup
 		}
 		if err := b.setState(c.LampID, c.State); err != nil {
 			return err

@@ -28,7 +28,7 @@ func (g *GPIO) findRegister(id string) (*Register, error) {
 	}
 	r, ok := g.registers[v]
 	if !ok {
-		return nil, registry.ErrInvalidRegister
+		return nil, registry.ErrInvalidGroup
 	}
 	return r, nil
 }
@@ -119,7 +119,7 @@ func (g *GPIO) Apply(changes []*registry.Change) error {
 			return err
 		}
 		if v < 0 || v >= r.Width {
-			return registry.ErrInvalidChannel
+			return registry.ErrInvalidLamp
 		}
 		r.channels[v] = c.State
 		dirtyRegisters[r] = nil
