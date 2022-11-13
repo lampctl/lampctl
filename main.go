@@ -8,6 +8,7 @@ import (
 
 	"github.com/lampctl/lampctl/db"
 	"github.com/lampctl/lampctl/gpio"
+	"github.com/lampctl/lampctl/hue"
 	"github.com/lampctl/lampctl/registry"
 	"github.com/lampctl/lampctl/server"
 	"github.com/urfave/cli/v2"
@@ -54,6 +55,8 @@ func main() {
 			defer r.Close()
 
 			// Add the currently-supported providers
+
+			// GPIO
 			g, err := gpio.New(&gpio.Config{
 				DB: db,
 			})
@@ -61,6 +64,15 @@ func main() {
 				return err
 			}
 			r.Register(g)
+
+			// Hue
+			h, err := hue.New(&hue.Config{
+				DB: db,
+			})
+			if err != nil {
+				return err
+			}
+			r.Register(h)
 
 			// Start up the server
 			s, err := server.New(&server.Config{
