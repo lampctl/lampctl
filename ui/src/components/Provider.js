@@ -14,7 +14,7 @@ export default function Provider({ provider }) {
   }, [])
 
   return (
-    <>
+    <div className={styles.provider}>
       <div className={styles.title}>{provider.name}</div>
       {response === null ?
         <p>Loading...</p> :
@@ -27,6 +27,6 @@ export default function Provider({ provider }) {
           />
         ))
       }
-    </>
+    </div>
   )
 }
