@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { sortByProp } from '../lib/util'
 import Group from './Group'
 import styles from './Provider.module.css'
 
@@ -17,7 +18,7 @@ export default function Provider({ provider }) {
       <div className={styles.title}>{provider.name}</div>
       {response === null ?
         <p>Loading...</p> :
-        response.groups.map(g => (
+        sortByProp(response.groups, 'name').map(g => (
           <Group
             key={g.id}
             provider={provider}
