@@ -93,6 +93,15 @@ func New(cfg *Config) (*Server, error) {
 	return s, nil
 }
 
+// Apply applies the provided changes to the specified provider.
+func (s *Server) Apply(provider string, changes []*registry.Change) error {
+	p, err := s.registry.GetProvider(provider)
+	if err != nil {
+		return err
+	}
+	return p.Apply(changes)
+}
+
 // Close shuts down the server.
 func (s *Server) Close() {
 	s.server.Shutdown(context.Background())
