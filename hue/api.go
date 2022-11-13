@@ -1,11 +1,14 @@
 package hue
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	hue_db "github.com/lampctl/lampctl/hue/db"
 )
+
+var errInvalidBridge = errors.New("invalid bridge specified")
 
 func (h *Hue) api_hue_bridges_POST(c *gin.Context) {
 	v := &hue_db.Bridge{}
@@ -38,5 +41,16 @@ func (h *Hue) api_hue_bridges_POST(c *gin.Context) {
 }
 
 func (h *Hue) api_hue_bridges_id_DELETE(c *gin.Context) {
-	//...
+	if err := h.db.Delete(&hue_db.Bridge{}, c.Param("id")); err != nil {
+		panic(err)
+	}
+	func() {
+		h.mutex.Lock()
+		defer h.mutex.Unlock()
+		if _, ok := h.bridges[c.Param("id")]; !ok {
+			panic(errInvalidBridge)
+		}
+		delete(h.bridges, c.Param("id"))
+	}()
+	c.JSON(http.StatusOK, gin.H{})
 }
