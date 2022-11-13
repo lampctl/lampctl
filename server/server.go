@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lampctl/lampctl/registry"
 	"github.com/lampctl/lampctl/ui"
+	"github.com/nathan-osman/go-herald"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -16,6 +17,7 @@ import (
 // Server provides an HTTP interface for interacting with lamps.
 type Server struct {
 	server   http.Server
+	herald   *herald.Herald
 	logger   zerolog.Logger
 	registry *registry.Registry
 }
@@ -34,6 +36,7 @@ func New(cfg *Config) (*Server, error) {
 				Addr:    cfg.Addr,
 				Handler: r,
 			},
+			herald:   herald.New(),
 			logger:   log.With().Str("package", "server").Logger(),
 			registry: cfg.Registry,
 		}
@@ -67,6 +70,9 @@ func New(cfg *Config) (*Server, error) {
 	api.GET("/providers/:id", s.api_providers_id_GET)
 	api.POST("/providers/:id/apply", s.api_providers_id_apply_POST)
 
+	// Special route for websocket connections
+	api.GET("/ws", s.api_ws_GET)
+
 	// Add the API routes from each individual provider
 	for _, p := range s.registry.Providers() {
 		if err := p.Init(api); err != nil {
@@ -80,6 +86,10 @@ func New(cfg *Config) (*Server, error) {
 		r.HandleContext(c)
 		c.Abort()
 	})
+
+	// Set the handler for incoming socket messages and start the goroutine
+	s.herald.MessageHandler = s.messageHandler
+	s.herald.Start()
 
 	// Start the goroutine that listens for incoming connections
 	go func() {
