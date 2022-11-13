@@ -2,7 +2,6 @@ package hue
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"sync"
 
@@ -86,12 +85,6 @@ func (h *Hue) Groups() []*registry.Group {
 	return groups
 }
 
-type byName []*registry.Lamp
-
-func (n byName) Len() int           { return len(n) }
-func (n byName) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
-func (n byName) Less(i, j int) bool { return n[i].Name < n[j].Name }
-
 func (h *Hue) Lamps() []*registry.Lamp {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
@@ -106,7 +99,6 @@ func (h *Hue) Lamps() []*registry.Lamp {
 			})
 		}
 	}
-	sort.Sort(byName(lights))
 	return lights
 }
 
