@@ -1,7 +1,6 @@
 package gpio
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -13,11 +12,6 @@ import (
 )
 
 const ProviderID = "gpio"
-
-var (
-	errInvalidRegister = errors.New("invalid register specified")
-	errInvalidChannel  = errors.New("invalid channel specified")
-)
 
 // GPIO implements the Provider interface for shift registers connected to
 // GPIO pins on a Raspberry Pi.
@@ -34,7 +28,7 @@ func (g *GPIO) findRegister(id string) (*Register, error) {
 	}
 	r, ok := g.registers[v]
 	if !ok {
-		return nil, errInvalidRegister
+		return nil, registry.ErrInvalidRegister
 	}
 	return r, nil
 }
@@ -125,7 +119,7 @@ func (g *GPIO) Apply(changes []*registry.Change) error {
 			return err
 		}
 		if v < 0 || v >= r.Width {
-			return errInvalidChannel
+			return registry.ErrInvalidChannel
 		}
 		r.channels[v] = c.State
 		dirtyRegisters[r] = nil

@@ -1,6 +1,15 @@
 package registry
 
-import "github.com/gin-gonic/gin"
+import (
+	"errors"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	ErrInvalidRegister = errors.New("invalid register specified")
+	ErrInvalidChannel  = errors.New("invalid channel specified")
+)
 
 // Group provides a logical grouping for lamps in a provider.
 type Group struct {
