@@ -10,7 +10,8 @@ import (
 
 const systemdUnitFile = `[Unit]
 Description=Lampctl
-Requires=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 ExecStart={{.path}} --db-path {{.db_path}}
