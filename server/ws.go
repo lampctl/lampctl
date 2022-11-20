@@ -13,8 +13,8 @@ func (s *Server) api_ws_GET(c *gin.Context) {
 }
 
 type wsMessage struct {
-	Provider string             `json:"provider"`
-	Changes  []*registry.Change `json:"changes"`
+	ProviderID string             `json:"provider_id"`
+	Changes    []*registry.Change `json:"changes"`
 }
 
 func (s *Server) messageHandler(m *herald.Message, client *herald.Client) {
@@ -23,7 +23,7 @@ func (s *Server) messageHandler(m *herald.Message, client *herald.Client) {
 		s.logger.Error().Msg(err.Error())
 		return
 	}
-	if err := s.Apply(v.Provider, v.Changes); err != nil {
+	if err := s.Apply(v.ProviderID, v.Changes); err != nil {
 		s.logger.Error().Msg(err.Error())
 	}
 }

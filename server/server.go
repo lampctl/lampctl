@@ -104,8 +104,8 @@ func New(cfg *Config) (*Server, error) {
 }
 
 // Apply applies the provided changes to the specified provider.
-func (s *Server) Apply(provider string, changes []*registry.Change) error {
-	p, err := s.registry.GetProvider(provider)
+func (s *Server) Apply(provider_id string, changes []*registry.Change) error {
+	p, err := s.registry.GetProvider(provider_id)
 	if err != nil {
 		return err
 	}
