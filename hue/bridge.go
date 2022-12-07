@@ -113,12 +113,14 @@ func (b *Bridge) getID() error {
 	return nil
 }
 
-func (b *Bridge) setState(light_id string, on bool) error {
+func (b *Bridge) setState(light_id string, on bool, duration int64) error {
 	l := &hueLight{
 		On: &hueOn{
 			On: on,
 		},
-		Dynamics: &hueDynamics{},
+		Dynamics: &hueDynamics{
+			Duration: duration,
+		},
 	}
 	if on {
 		l.Dimming = &hueDimming{
