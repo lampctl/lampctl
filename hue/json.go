@@ -4,6 +4,13 @@ import (
 	"encoding/json"
 )
 
+const (
+	hueTypeLight        = "light"
+	hueTypeGroupedLight = "grouped_light"
+	hueTypeZone         = "zone"
+	hueTypeBridgeHome   = "bridge_home"
+)
+
 type hueRegisterRequest struct {
 	DeviceType        string `json:"devicetype"`
 	GenerateClientKey bool   `json:"generateclientkey"`
@@ -23,6 +30,11 @@ type hueResponse struct {
 	Data   json.RawMessage `json:"data"`
 }
 
+type hueOwner struct {
+	RID   string `json:"rid"`
+	RType string `json:"rtype"`
+}
+
 type hueMetadata struct {
 	Name string `json:"name"`
 }
@@ -39,12 +51,14 @@ type hueDynamics struct {
 	Duration int64 `json:"duration"`
 }
 
-type hueLight struct {
+type hueResource struct {
 	ID       string       `json:"id,omitempty"`
+	Owner    *hueOwner    `json:"owner,omitempty"`
 	Metadata *hueMetadata `json:"metadata,omitempty"`
 	On       *hueOn       `json:"on,omitempty"`
 	Dimming  *hueDimming  `json:"dimming,omitempty"`
 	Dynamics *hueDynamics `json:"dynamics,omitempty"`
+	Type     string       `json:"type,omitempty"`
 }
 
 type hueBridge struct {

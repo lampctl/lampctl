@@ -77,12 +77,12 @@ func (h *Hue) Lamps() []*registry.Lamp {
 	defer h.mutex.RUnlock()
 	lights := []*registry.Lamp{}
 	for _, b := range h.bridges {
-		for _, l := range b.lights {
+		for _, r := range b.resources {
 			lights = append(lights, &registry.Lamp{
-				ID:      l.ID,
-				Name:    l.Metadata.Name,
+				ID:      r.Resource.ID,
+				Name:    r.Name,
 				GroupID: fmt.Sprint(b.ID),
-				State:   l.On.On,
+				State:   r.Resource.On.On,
 			})
 		}
 	}

@@ -15,13 +15,30 @@ import (
 
 const appName = "lampctl"
 
-var errInvalidResponse = errors.New("invalid response received")
+var (
+	errInvalidResource = errors.New("invalid resource specified")
+	errInvalidResponse = errors.New("invalid response received")
+)
+
+type bridgeResource struct {
+	Name     string
+	Path     string
+	Resource *hueResource
+}
 
 // Bridge represents a connection to a Hue bridge.
 type Bridge struct {
 	*hue_db.Bridge
-	client *http.Client
-	lights map[string]*hueLight
+	client    *http.Client
+	resources map[string]*bridgeResource
+}
+
+func (b *Bridge) getResource(id string) (*bridgeResource, error) {
+	r, ok := b.resources[id]
+	if !ok {
+		return nil, errInvalidResource
+	}
+	return r, nil
 }
 
 func (b *Bridge) doRequest(method, path string, body interface{}) (*http.Response, error) {
@@ -119,10 +136,14 @@ func (b *Bridge) setState(
 	brightness float64,
 	duration int64,
 ) error {
+	r, err := b.getResource(light_id)
+	if err != nil {
+		return err
+	}
 	if brightness == 0 {
 		brightness = 1.0
 	}
-	l := &hueLight{
+	l := &hueResource{
 		On: &hueOn{
 			On: on,
 		},
@@ -138,11 +159,7 @@ func (b *Bridge) setState(
 			Brightness: 100,
 		}
 	}
-	_, err := b.doPut(
-		fmt.Sprintf("/clip/v2/resource/light/%s", light_id),
-		l,
-	)
-	if err != nil {
+	if _, err := b.doPut(r.Path, l); err != nil {
 		return err
 	}
 	l.On.On = on
@@ -164,22 +181,54 @@ func NewBridge(bridge *hue_db.Bridge) *Bridge {
 				},
 			},
 		},
-		lights: make(map[string]*hueLight),
+		resources: make(map[string]*bridgeResource),
 	}
 }
 
-// Initialize loads the list of lights in a bridge.
+// Init enumerates the contents of the bridge, looking for lights and grouped
+// lights, extracting information from what is retrieved.
 func (b *Bridge) Init() error {
-	r, err := b.doGet("/clip/v2/resource/light")
+	r, err := b.doGet("/clip/v2/resource")
 	if err != nil {
 		return err
 	}
-	lights := []*hueLight{}
-	if err := json.Unmarshal(r.Data, &lights); err != nil {
+	resources := []*hueResource{}
+	if err := json.Unmarshal(r.Data, &resources); err != nil {
 		return err
 	}
-	for _, l := range lights {
-		b.lights[l.ID] = l
+
+	// Due to the way types work in the API, we first need to build a map of
+	// resource IDs => resource names
+	nameMap := make(map[string]string)
+	for _, r := range resources {
+		if r.Metadata != nil {
+			nameMap[r.ID] = r.Metadata.Name
+		}
+	}
+
+	for _, r := range resources {
+		switch r.Type {
+
+		// For a light, simply add it to the map by its ID
+		case hueTypeLight:
+			b.resources[r.ID] = &bridgeResource{
+				Name:     r.Metadata.Name,
+				Path:     fmt.Sprintf("/clip/v2/resource/light/%s", r.ID),
+				Resource: r,
+			}
+
+		// For grouped lights, do the same, but lookup the name
+		case hueTypeGroupedLight:
+			name := nameMap[r.Owner.RID]
+			if r.Owner.RType == hueTypeBridgeHome {
+				name = "All"
+			}
+			b.resources[r.ID] = &bridgeResource{
+				Name:     name,
+				Path:     fmt.Sprintf("/clip/v2/resource/grouped_light/%s", r.ID),
+				Resource: r,
+			}
+		}
 	}
 	return nil
 }
