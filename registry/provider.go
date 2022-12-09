@@ -27,10 +27,11 @@ type Lamp struct {
 
 // Change represents a request to change the state of a lamp.
 type Change struct {
-	GroupID  string `json:"group_id"`
-	LampID   string `json:"lamp_id"`
-	State    bool   `json:"state"`
-	Duration int    `json:"duration"`
+	GroupID    string  `json:"group_id"`
+	LampID     string  `json:"lamp_id"`
+	State      bool    `json:"state"`
+	Duration   int64   `json:"duration"`
+	Brightness float64 `json:"brightness"`
 }
 
 // Provider represents a group of lamps. The interface provides methods for

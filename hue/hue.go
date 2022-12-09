@@ -97,7 +97,7 @@ func (h *Hue) Apply(changes []*registry.Change) error {
 		if !ok {
 			return registry.ErrInvalidGroup
 		}
-		if err := b.setState(c.LampID, c.State, int64(c.Duration)); err != nil {
+		if err := b.setState(c.LampID, c.State, c.Brightness, c.Duration); err != nil {
 			return err
 		}
 	}
