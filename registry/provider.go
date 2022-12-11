@@ -9,6 +9,7 @@ import (
 var (
 	ErrInvalidGroup = errors.New("invalid group specified")
 	ErrInvalidLamp  = errors.New("invalid lamp specified")
+	ErrInvalidColor = errors.New("invalid color specified")
 )
 
 // Group provides a logical grouping for lamps in a provider.
@@ -32,6 +33,7 @@ type Change struct {
 	State      bool    `json:"state"`
 	Duration   int64   `json:"duration"`
 	Brightness float64 `json:"brightness"`
+	Color      string  `json:"color"`
 }
 
 // Provider represents a group of lamps. The interface provides methods for

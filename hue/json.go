@@ -47,6 +47,15 @@ type hueDimming struct {
 	Brightness float64 `json:"brightness"`
 }
 
+type hueColorXY struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+type hueColor struct {
+	XY *hueColorXY `json:"xy"`
+}
+
 type hueDynamics struct {
 	Duration int64 `json:"duration"`
 }
@@ -57,6 +66,7 @@ type hueResource struct {
 	Metadata *hueMetadata `json:"metadata,omitempty"`
 	On       *hueOn       `json:"on,omitempty"`
 	Dimming  *hueDimming  `json:"dimming,omitempty"`
+	Color    *hueColor    `json:"color,omitempty"`
 	Dynamics *hueDynamics `json:"dynamics,omitempty"`
 	Type     string       `json:"type,omitempty"`
 }

@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	hue_db "github.com/lampctl/lampctl/hue/db"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 const appName = "lampctl"
@@ -134,6 +135,7 @@ func (b *Bridge) setState(
 	light_id string,
 	on bool,
 	brightness float64,
+	color string,
 	duration int64,
 ) error {
 	r, err := b.getResource(light_id)
@@ -157,6 +159,19 @@ func (b *Bridge) setState(
 	if on {
 		l.Dimming = &hueDimming{
 			Brightness: 100,
+		}
+	}
+	if color != "" {
+		c, err := colorful.Hex(color)
+		if err != nil {
+			return err
+		}
+		x, y, _ := c.Xyy()
+		l.Color = &hueColor{
+			XY: &hueColorXY{
+				X: x,
+				Y: y,
+			},
 		}
 	}
 	if _, err := b.doPut(r.Path, l); err != nil {
