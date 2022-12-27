@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { sortByProp } from '../lib/util'
 import Provider from './Provider'
 
 export default function ProviderList() {
@@ -15,7 +16,7 @@ export default function ProviderList() {
     <>
       {providers === null ?
         <p>Loading...</p> :
-        providers.map(p => (
+        sortByProp(providers, 'name').map(p => (
           <Provider key={p.id} provider={p} />
         ))}
     </>
