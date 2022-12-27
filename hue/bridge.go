@@ -30,8 +30,9 @@ type bridgeResource struct {
 // Bridge represents a connection to a Hue bridge.
 type Bridge struct {
 	*hue_db.Bridge
-	client    *http.Client
-	resources map[string]*bridgeResource
+	client        *http.Client
+	resources     map[string]*bridgeResource
+	allResourceID string
 }
 
 func (b *Bridge) getResource(id string) (*bridgeResource, error) {
@@ -237,6 +238,7 @@ func (b *Bridge) Init() error {
 			name := nameMap[r.Owner.RID]
 			if r.Owner.RType == hueTypeBridgeHome {
 				name = "All"
+				b.allResourceID = r.ID
 			}
 			b.resources[r.ID] = &bridgeResource{
 				Name:     name,

@@ -60,4 +60,7 @@ type Provider interface {
 
 	// Apply applies a list of state changes to the lamps in the provider.
 	Apply(changes []*Change) error
+
+	// ApplyToAll applies a state change to all lamps in the provider.
+	ApplyToAll(change *Change) error
 }

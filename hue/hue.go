@@ -103,3 +103,20 @@ func (h *Hue) Apply(changes []*registry.Change) error {
 	}
 	return nil
 }
+
+func (h *Hue) ApplyToAll(change *registry.Change) error {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+	for _, b := range h.bridges {
+		if err := b.setState(
+			b.allResourceID,
+			change.State,
+			change.Brightness,
+			change.Color,
+			change.Duration,
+		); err != nil {
+			return err
+		}
+	}
+	return nil
+}
