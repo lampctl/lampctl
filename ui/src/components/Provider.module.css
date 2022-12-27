@@ -2,7 +2,25 @@
   margin: 16px 0;
 }
 
+.header {
+  column-gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+}
+
 .title {
   font-size: 18pt;
   font-weight: bold;
+}
+
+.button {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 16px;
+  transition: all 200ms;
+}
+
+.button:hover {
+  background-color: #a0a0a0;
 }
