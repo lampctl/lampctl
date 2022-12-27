@@ -134,7 +134,7 @@ func (g *GPIO) ApplyToAll(change *registry.Change) error {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	for _, r := range g.registers {
-		for i, _ := range r.channels {
+		for i := range r.channels {
 			r.channels[i] = change.State
 		}
 		r.Cycle()
