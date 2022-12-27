@@ -49,3 +49,18 @@ func (s *Server) api_providers_id_apply_POST(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+func (s *Server) api_providers_id_apply_all_POST(c *gin.Context) {
+	v := &registry.Change{}
+	if err := c.ShouldBindJSON(&v); err != nil {
+		panic(err)
+	}
+	p, err := s.registry.GetProvider(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	if err := p.ApplyToAll(v); err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}

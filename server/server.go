@@ -69,6 +69,7 @@ func New(cfg *Config) (*Server, error) {
 	api.GET("/providers", s.api_providers_GET)
 	api.GET("/providers/:id", s.api_providers_id_GET)
 	api.POST("/providers/:id/apply", s.api_providers_id_apply_POST)
+	api.POST("/providers/:id/apply/all", s.api_providers_id_apply_all_POST)
 
 	// Special route for websocket connections
 	api.GET("/ws", s.api_ws_GET)
