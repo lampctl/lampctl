@@ -6,22 +6,62 @@ import (
 	"time"
 
 	"github.com/lampctl/lampctl/registry"
+	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/smf"
 )
 
-type sequencerEntry struct {
+type sequencerRawEvent struct {
+	Offset time.Duration
+	Note   int
+	NoteOn bool
+}
+
+type sequencerEvent struct {
 	Provider *registry.Provider
 	Changes  []*registry.Change
 }
 
 type sequencerGroup struct {
-	Offset  time.Duration
-	Entries []*sequencerEntry
+	Offset time.Duration
+	Events []*sequencerEvent
 }
 
 type sequencerSequence struct {
 	Groups     []*sequencerGroup
 	GroupIndex int
+}
+
+func (s *Sequencer) loadRawEvents(midiFilename string) ([]*sequencerRawEvent, error) {
+	f, err := smf.ReadFile(midiFilename)
+	if err != nil {
+		return nil, err
+	}
+	events := []*sequencerRawEvent{}
+	for _, track := range f.Tracks {
+		var t int64
+		for _, e := range track {
+			t += int64(e.Delta)
+			if !e.Message.IsOneOf(midi.NoteOnMsg, midi.NoteOffMsg) {
+				continue
+			}
+			var (
+				absOffset              = time.Duration(f.TimeAt(t) * 1000)
+				channel, key, velocity uint8
+			)
+			switch e.Message.Type() {
+			case midi.NoteOnMsg:
+				e.Message.GetNoteOn(&channel, &key, &velocity)
+			case midi.NoteOffMsg:
+				e.Message.GetNoteOff(&channel, &key, &velocity)
+			}
+			events = append(events, &sequencerRawEvent{
+				Offset: absOffset,
+				Note:   int(key),
+				NoteOn: e.Message.Is(midi.NoteOnMsg),
+			})
+		}
+	}
+	return events, nil
 }
 
 type mappingNote struct {
@@ -46,15 +86,21 @@ func (s *Sequencer) loadMap(mappingFilename string) (mappingMap, error) {
 }
 
 func (s *Sequencer) load(midiFilename, mappingFilename string) error {
-	f, err := smf.ReadFile(midiFilename)
+
+	// Read the raw MIDI events
+	e, err := s.loadRawEvents(midiFilename)
 	if err != nil {
 		return err
 	}
+
+	// Read the mapping file
 	m, err := s.loadMap(mappingFilename)
 	if err != nil {
 		return err
 	}
 
+	// TODO: create an ordered sequence from the events and mapping
+	_ = e
 	_ = m
 
 	return nil
