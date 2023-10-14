@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/lampctl/lampctl/registry"
+	"github.com/lampctl/lampctl/sequencer"
 	"github.com/lampctl/lampctl/ui"
 	"github.com/nathan-osman/go-herald"
 	"github.com/rs/zerolog"
@@ -16,10 +17,11 @@ import (
 
 // Server provides an HTTP interface for interacting with lamps.
 type Server struct {
-	server   http.Server
-	herald   *herald.Herald
-	logger   zerolog.Logger
-	registry *registry.Registry
+	server    http.Server
+	herald    *herald.Herald
+	logger    zerolog.Logger
+	registry  *registry.Registry
+	sequencer *sequencer.Sequencer
 }
 
 func New(cfg *Config) (*Server, error) {
@@ -36,9 +38,10 @@ func New(cfg *Config) (*Server, error) {
 				Addr:    cfg.Addr,
 				Handler: r,
 			},
-			herald:   herald.New(),
-			logger:   log.With().Str("package", "server").Logger(),
-			registry: cfg.Registry,
+			herald:    herald.New(),
+			logger:    log.With().Str("package", "server").Logger(),
+			registry:  cfg.Registry,
+			sequencer: cfg.Sequencer,
 		}
 	)
 

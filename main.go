@@ -10,6 +10,7 @@ import (
 	"github.com/lampctl/lampctl/gpio"
 	"github.com/lampctl/lampctl/hue"
 	"github.com/lampctl/lampctl/registry"
+	"github.com/lampctl/lampctl/sequencer"
 	"github.com/lampctl/lampctl/server"
 	"github.com/urfave/cli/v2"
 )
@@ -74,11 +75,18 @@ func main() {
 			}
 			r.Register(h)
 
+			// Create the sequencer
+			seq := sequencer.New(&sequencer.Config{
+				Registry: r,
+			})
+			defer seq.Close()
+
 			// Start up the server
 			s, err := server.New(&server.Config{
-				Addr:     c.String("server-addr"),
-				Debug:    c.Bool("debug"),
-				Registry: r,
+				Addr:      c.String("server-addr"),
+				Debug:     c.Bool("debug"),
+				Registry:  r,
+				Sequencer: seq,
 			})
 			if err != nil {
 				return err
