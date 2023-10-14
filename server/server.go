@@ -74,6 +74,12 @@ func New(cfg *Config) (*Server, error) {
 	api.POST("/providers/:id/apply", s.api_providers_id_apply_POST)
 	api.POST("/providers/:id/apply/all", s.api_providers_id_apply_all_POST)
 
+	// Add the sequencer API routes
+	api.GET("/sequencer", s.api_sequencer_GET)
+	api.POST("/sequencer/load", s.api_sequencer_load_POST)
+	api.POST("/sequencer/play", s.api_sequencer_play_POST)
+	api.POST("/sequencer/stop", s.api_sequencer_stop_POST)
+
 	// Special route for websocket connections
 	api.GET("/ws", s.api_ws_GET)
 

@@ -64,3 +64,31 @@ func (s *Server) api_providers_id_apply_all_POST(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+func (s *Server) api_sequencer_GET(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+type sequencerLoadJSON struct {
+	MidiFilename    string `json:"midi_filename"`
+	MappingFilename string `json:"mapping_filename"`
+}
+
+func (s *Server) api_sequencer_load_POST(c *gin.Context) {
+	v := &sequencerLoadJSON{}
+	if err := c.ShouldBindJSON(v); err != nil {
+		panic(err)
+	}
+	if err := s.sequencer.Load(v.MidiFilename, v.MappingFilename); err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) api_sequencer_play_POST(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) api_sequencer_stop_POST(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
+}
