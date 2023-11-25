@@ -21,6 +21,9 @@ func New(cfg *Config) (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := d.AutoMigrate(&Setting{}); err != nil {
+		return nil, err
+	}
 	return &Conn{
 		DB: d,
 	}, nil
