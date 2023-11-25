@@ -8,6 +8,7 @@ require (
 	github.com/lampctl/go-sse v1.1.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/nathan-osman/go-herald v0.0.0-20220430073028-0f07e7b1071f
+	github.com/rpi-ws281x/rpi-ws281x-go v1.0.10
 	github.com/rs/zerolog v1.31.0
 	github.com/stianeikeland/go-rpio/v4 v4.6.0
 	github.com/urfave/cli/v2 v2.25.7
@@ -38,6 +39,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect

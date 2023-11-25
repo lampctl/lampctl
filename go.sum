@@ -72,8 +72,11 @@ github.com/nathan-osman/go-herald v0.0.0-20220430073028-0f07e7b1071f h1:dO+bJ0Oi
 github.com/nathan-osman/go-herald v0.0.0-20220430073028-0f07e7b1071f/go.mod h1:kUF1rTnPdC978XNvf/KtCPXTSjWX67BBjwDI7/QgdWk=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/rpi-ws281x/rpi-ws281x-go v1.0.10 h1:KeO4QOD1XULQ1DvL0pOx6lsJcq51Kh0q2KtLdgCx2nU=
+github.com/rpi-ws281x/rpi-ws281x-go v1.0.10/go.mod h1:p0jenYJjUUOmOwwrcdLmzd3yqKBVkQHI0gfZTXlj0qk=
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.31.0 h1:FcTR3NnLWW+NnTwwhFWiJSZr4ECLpqCm6QsEnyvbV4A=
 github.com/rs/zerolog v1.31.0/go.mod h1:/7mN4D5sKwJLZQ2b/znpjC3/GQWY/xaDXUM0kKWRHss=

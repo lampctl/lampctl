@@ -12,6 +12,7 @@ import (
 	"github.com/lampctl/lampctl/registry"
 	"github.com/lampctl/lampctl/sequencer"
 	"github.com/lampctl/lampctl/server"
+	"github.com/lampctl/lampctl/ws2811"
 	"github.com/urfave/cli/v2"
 )
 
@@ -74,6 +75,15 @@ func main() {
 				return err
 			}
 			r.Register(h)
+
+			// ws2811
+			w, err := ws2811.New(&ws2811.Config{
+				DB: db,
+			})
+			if err != nil {
+				return err
+			}
+			r.Register(w)
 
 			// Create the sequencer
 			seq := sequencer.New(&sequencer.Config{
