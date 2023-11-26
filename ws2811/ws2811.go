@@ -120,7 +120,7 @@ func (w *Ws2811) Lamps() []*registry.Lamp {
 	for i := 0; i < w.numLEDs; i++ {
 		lamps = append(lamps, &registry.Lamp{
 			ID:      fmt.Sprint(i),
-			Name:    fmt.Sprintf("LED %03d", i),
+			Name:    fmt.Sprintf("LED %03d", i+1),
 			GroupID: GroupID,
 			State:   w.ws.Leds(0)[i] != 0,
 		})
