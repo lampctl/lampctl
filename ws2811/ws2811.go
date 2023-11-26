@@ -97,11 +97,17 @@ func (w *Ws2811) Close() {
 }
 
 func (w *Ws2811) Groups() []*registry.Group {
-	return []*registry.Group{
-		{
-			ID:   GroupID,
-			Name: "LEDs on GPIO 18",
-		},
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
+	if w.ws != nil {
+		return []*registry.Group{
+			{
+				ID:   GroupID,
+				Name: "LEDs on GPIO 18",
+			},
+		}
+	} else {
+		return []*registry.Group{}
 	}
 }
 
