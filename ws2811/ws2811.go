@@ -58,8 +58,10 @@ func (w *Ws2811) init() error {
 }
 
 func (w *Ws2811) free() {
-	w.ws.Fini()
-	w.ws = nil
+	if w.ws != nil {
+		w.ws.Fini()
+		w.ws = nil
+	}
 }
 
 func New(cfg *Config) (*Ws2811, error) {
