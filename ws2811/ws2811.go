@@ -23,7 +23,7 @@ var errNoLEDs = errors.New("LED count is set to 0")
 
 // Ws2811 implements the Provider interface for ws2811.
 type Ws2811 struct {
-	mutex   sync.RWMutex
+	mutex   sync.Mutex
 	db      *db.Conn
 	ws      *ws2811.WS2811
 	numLEDs int
@@ -99,8 +99,8 @@ func (w *Ws2811) Close() {
 }
 
 func (w *Ws2811) Groups() []*registry.Group {
-	w.mutex.RLock()
-	defer w.mutex.RUnlock()
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 	if w.ws != nil {
 		return []*registry.Group{
 			{
@@ -114,15 +114,15 @@ func (w *Ws2811) Groups() []*registry.Group {
 }
 
 func (w *Ws2811) Lamps() []*registry.Lamp {
-	w.mutex.RLock()
-	defer w.mutex.RUnlock()
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 	lamps := []*registry.Lamp{}
 	for i := 0; i < w.numLEDs; i++ {
 		lamps = append(lamps, &registry.Lamp{
 			ID:      fmt.Sprint(i),
 			Name:    fmt.Sprintf("LED %03d", i),
 			GroupID: GroupID,
-			State:   false,
+			State:   w.ws.Leds(0)[i] != 0,
 		})
 	}
 	return lamps
