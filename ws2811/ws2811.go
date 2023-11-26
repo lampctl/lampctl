@@ -1,6 +1,7 @@
 package ws2811
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -8,52 +9,71 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lampctl/lampctl/db"
 	"github.com/lampctl/lampctl/registry"
-	ws2811_db "github.com/lampctl/lampctl/ws2811/db"
 	ws2811 "github.com/rpi-ws281x/rpi-ws281x-go"
 )
 
-const ProviderID = "ws2811"
+const (
+	KeyNumLeds = "ws2811.numLeds"
+
+	ProviderID = "ws2811"
+	GroupID    = "ws2811"
+)
+
+var errNoLEDs = errors.New("LED count is set to 0")
 
 // Ws2811 implements the Provider interface for ws2811.
 type Ws2811 struct {
-	mutex    sync.RWMutex
-	db       *db.Conn
-	ws       *ws2811.WS2811
-	channels []*ws2811_db.Channel
+	mutex   sync.RWMutex
+	db      *db.Conn
+	ws      *ws2811.WS2811
+	numLEDs int
+}
+
+func (w *Ws2811) init() error {
+
+	// (Re)create the string if there are more than 0 LEDs
+	if w.numLEDs > 0 {
+
+		// Override the default options to max the brightness & set count
+		o := ws2811.DefaultOptions
+		o.Channels[0].Brightness = 255
+		o.Channels[0].LedCount = w.numLEDs
+
+		// Create the string
+		ws, err := ws2811.MakeWS2811(&o)
+		if err != nil {
+			return err
+		}
+
+		// Initialize the string
+		if err := ws.Init(); err != nil {
+			return err
+		}
+
+		// Assign the string *only* on success
+		w.ws = ws
+	}
+
+	return nil
+}
+
+func (w *Ws2811) free() {
+	w.ws.Fini()
+	w.ws = nil
 }
 
 func New(cfg *Config) (*Ws2811, error) {
-	w := &Ws2811{
-		db:       cfg.DB,
-		channels: []*ws2811_db.Channel{},
-	}
-	if err := w.db.AutoMigrate(&ws2811_db.Channel{}); err != nil {
-		return nil, err
-	}
-	if err := w.db.Find(&w.channels).Error; err != nil {
-		return nil, err
-	}
-	channelOptions := []ws2811.ChannelOption{}
-	for _, c := range w.channels {
-		channelOptions = append(channelOptions, ws2811.ChannelOption{
-			GpioPin:    c.GpioPin,
-			LedCount:   c.LedCount,
-			Brightness: 255,
-			StripeType: ws2811.WS2812Strip,
-		})
-	}
-	ws, err := ws2811.MakeWS2811(&ws2811.Option{
-		Frequency: ws2811.TargetFreq,
-		DmaNum:    ws2811.DefaultDmaNum,
-		Channels:  channelOptions,
-	})
+	v, err := cfg.DB.GetIntSetting(KeyNumLeds, 0)
 	if err != nil {
 		return nil, err
 	}
-	if err := ws.Init(); err != nil {
+	w := &Ws2811{
+		db:      cfg.DB,
+		numLEDs: v,
+	}
+	if err := w.init(); err != nil {
 		return nil, err
 	}
-	w.ws = ws
 	return w, nil
 }
 
@@ -66,40 +86,36 @@ func (w *Ws2811) Name() string {
 }
 
 func (w *Ws2811) Init(api *gin.RouterGroup) error {
-	api.POST("/ws2811/channels", w.api_ws2811_channels_POST)
+	api.POST("/ws2811", w.api_ws2811_leds_POST)
 	return nil
 }
 
 func (w *Ws2811) Close() {
-	w.ws.Fini()
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	w.free()
 }
 
 func (w *Ws2811) Groups() []*registry.Group {
-	w.mutex.RLock()
-	defer w.mutex.RUnlock()
-	groups := []*registry.Group{}
-	for _, c := range w.channels {
-		groups = append(groups, &registry.Group{
-			ID:   fmt.Sprint(c.ID),
-			Name: fmt.Sprintf("GPIO Pin %d", c.GpioPin),
-		})
+	return []*registry.Group{
+		{
+			ID:   GroupID,
+			Name: "LEDs on GPIO 18",
+		},
 	}
-	return groups
 }
 
 func (w *Ws2811) Lamps() []*registry.Lamp {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	lamps := []*registry.Lamp{}
-	for i, c := range w.channels {
-		for j := 0; j < c.LedCount; j++ {
-			lamps = append(lamps, &registry.Lamp{
-				ID:      fmt.Sprint(j),
-				Name:    fmt.Sprintf("LED %03d", j+1),
-				GroupID: fmt.Sprint(i),
-				State:   false,
-			})
-		}
+	for i := 0; i < w.numLEDs; i++ {
+		lamps = append(lamps, &registry.Lamp{
+			ID:      fmt.Sprint(i),
+			Name:    fmt.Sprintf("LED %d", i),
+			GroupID: GroupID,
+			State:   false,
+		})
 	}
 	return lamps
 }
@@ -107,32 +123,41 @@ func (w *Ws2811) Lamps() []*registry.Lamp {
 func (w *Ws2811) Apply(changes []*registry.Change) error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
+	if w.ws == nil {
+		return errNoLEDs
+	}
 	for _, c := range changes {
-		chOff, err := strconv.Atoi(c.GroupID)
+		if c.GroupID != GroupID {
+			return fmt.Errorf("invalid group ID %s", c.GroupID)
+		}
+		i, err := strconv.Atoi(c.LampID)
 		if err != nil {
 			return err
 		}
-		if chOff < 0 || chOff >= len(w.channels) {
-			return fmt.Errorf("invalid group ID %d", chOff)
-		}
-		idx, err := strconv.Atoi(c.LampID)
-		if err != nil {
-			return err
-		}
-		if idx < 0 || idx >= w.channels[chOff].LedCount {
-			return fmt.Errorf("invalid lamp ID %d", idx)
+		if i < 0 || i >= w.numLEDs {
+			return fmt.Errorf("invalid lamp ID %d", i)
 		}
 		var color uint32
 		if c.State {
 			color = 0xffffff
-		} else {
-			color = 0x000000
 		}
-		w.ws.Leds(chOff)[idx] = color
+		w.ws.Leds(0)[i] = color
 	}
-	return nil
+	return w.ws.Render()
 }
 
 func (w *Ws2811) ApplyToAll(change *registry.Change) error {
-	return nil
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	if w.ws == nil {
+		return errNoLEDs
+	}
+	var color uint32
+	if change.State {
+		color = 0xffffff
+	}
+	for i := 0; i < len(w.ws.Leds(0)); i++ {
+		w.ws.Leds(0)[i] = color
+	}
+	return w.ws.Render()
 }
