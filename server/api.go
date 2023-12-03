@@ -70,6 +70,7 @@ func (s *Server) api_sequencer_GET(c *gin.Context) {
 }
 
 type sequencerLoadJSON struct {
+	AudioFilename   string `json:"audio_filename"`
 	MidiFilename    string `json:"midi_filename"`
 	MappingFilename string `json:"mapping_filename"`
 }
@@ -79,16 +80,22 @@ func (s *Server) api_sequencer_load_POST(c *gin.Context) {
 	if err := c.ShouldBindJSON(v); err != nil {
 		panic(err)
 	}
-	if err := s.sequencer.Load(v.MidiFilename, v.MappingFilename); err != nil {
+	if err := s.sequencer.Load(
+		v.AudioFilename,
+		v.MidiFilename,
+		v.MappingFilename,
+	); err != nil {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (s *Server) api_sequencer_play_POST(c *gin.Context) {
+	s.sequencer.Play()
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (s *Server) api_sequencer_stop_POST(c *gin.Context) {
+	s.sequencer.Stop()
 	c.JSON(http.StatusOK, gin.H{})
 }

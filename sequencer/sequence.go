@@ -2,7 +2,9 @@ package sequencer
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/lampctl/lampctl/registry"
@@ -17,7 +19,7 @@ type sequencerRawEvent struct {
 }
 
 type sequencerEvent struct {
-	Provider *registry.Provider
+	Provider registry.Provider
 	Changes  []*registry.Change
 }
 
@@ -85,23 +87,89 @@ func (s *Sequencer) loadMap(mappingFilename string) (mappingMap, error) {
 	return m, nil
 }
 
+type changeMap map[registry.Provider][]*registry.Change
+
 func (s *Sequencer) load(midiFilename, mappingFilename string) error {
 
 	// Read the raw MIDI events
-	e, err := s.loadRawEvents(midiFilename)
+	events, err := s.loadRawEvents(midiFilename)
 	if err != nil {
 		return err
 	}
 
 	// Read the mapping file
-	m, err := s.loadMap(mappingFilename)
+	mapping, err := s.loadMap(mappingFilename)
 	if err != nil {
 		return err
 	}
 
-	// TODO: create an ordered sequence from the events and mapping
-	_ = e
-	_ = m
+	// Create a map of provider IDs to actual Provider instances
+	providerMap := map[string]registry.Provider{}
+	for _, m := range mapping {
+		if _, ok := providerMap[m.ProviderID]; !ok {
+			p, err := s.registry.GetProvider(m.ProviderID)
+			if err != nil {
+				return err
+			}
+			providerMap[m.ProviderID] = p
+		}
+	}
+
+	// Group the events by their offset and then provider
+	var (
+		sequence          = &sequencerSequence{}
+		currentOffset     time.Duration
+		changesByProvider changeMap
+	)
+	for _, e := range events {
+
+		// If this is the first event or a new offset...
+		if changesByProvider == nil || e.Offset != currentOffset {
+
+			// Create a sequencerGroup for the events
+			if changesByProvider != nil {
+				g := &sequencerGroup{
+					Offset: currentOffset,
+				}
+				for p, changeList := range changesByProvider {
+					g.Events = append(g.Events, &sequencerEvent{
+						Provider: p,
+						Changes:  changeList,
+					})
+				}
+				sequence.Groups = append(sequence.Groups, g)
+			}
+
+			// Reset the current offset and change map
+			currentOffset = e.Offset
+			changesByProvider = changeMap{}
+		}
+
+		// Find the mapping for the note
+		m, ok := mapping[strconv.Itoa(e.Note)]
+		if !ok {
+			return fmt.Errorf("note %d has no mapping", e.Note)
+		}
+
+		// Find the provider in the map
+		p, ok := providerMap[m.ProviderID]
+		if !ok {
+			return fmt.Errorf("provider %s does not exist", m.ProviderID)
+		}
+
+		// Add the events to the map
+		changesByProvider[p] = append(
+			changesByProvider[p],
+			&registry.Change{
+				GroupID: m.GroupID,
+				LampID:  m.LampID,
+				State:   e.NoteOn,
+			},
+		)
+	}
+
+	// Assign the sequence
+	s.sequence = sequence
 
 	return nil
 }
