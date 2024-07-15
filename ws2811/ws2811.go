@@ -145,11 +145,11 @@ func (w *Ws2811) Apply(changes []*registry.Change) error {
 		if i < 0 || i >= w.numLEDs {
 			return fmt.Errorf("invalid lamp ID %d", i)
 		}
-		var color uint32
-		if c.State {
+		color, _ := strconv.ParseInt(c.Color, 16, 32)
+		if color == 0 && c.State {
 			color = 0xffffff
 		}
-		w.ws.Leds(0)[i] = color
+		w.ws.Leds(0)[i] = uint32(color)
 	}
 	return w.ws.Render()
 }
